@@ -1,8 +1,8 @@
 package main
 
 import (
-	"fmt"
 	"strings"
+	"fmt"
 )
 
 type NodeAttribute struct {
@@ -17,15 +17,28 @@ type Node struct {
 	text string
 
 	parent   *Node
-	childern []Node
+	children []*Node
+}
+
+
+func WalkNode(root *Node) {
+	fmt.Printf("New Node: %s, %s, %v, %v, self: %p parent: %p\n", root.tag, root.text, root.attributes, root.children, &root, root.parent)
+	//fmt.Printf("New Node: %s, self: %p, parent: %p\n",root.tag, root, root.parent) 
+	fmt.Println(len(root.children))
+	for _, child := range root.children {
+		fmt.Printf("New Node: %s, %s, %v\n", child.tag, child.text, child.attributes)
+		//WalkNode(child)
+	}
+	fmt.Println("End Tag: ", root.tag)
 }
 
 func Parser(tokens []Token) *Node {
 	var root_node *Node
-	var previous_node *Node
 	var current_node *Node
-
+	var previous_node *Node
 	var attribute_values []string
+	
+	//all_nodes := []*Node{}
 
 	var current_nodeattr NodeAttribute
 	var current_token Token
@@ -41,16 +54,30 @@ func Parser(tokens []Token) *Node {
 			break
 		}
 		current_token = tokens[pos]
-
 		switch current_token.token_type {
 		case OpenTag:
-			if tokens[pos+1] == ForwardSlash {
+			if tokens[pos+1].token_type == ForwardSlash {
 				// Need to close of current node
-				current_node = previous_node
-				previous_node = previous_node.parent
 				pos += 3
+				current_depth -= 1
+				if previous_node != nil {
+					
+					//previous_node.parent.children = append(previous_node.parent.children, current_node)
+				}
+
+
+				current_node = previous_node
+				if previous_node.parent != nil {
+					fmt.Println("Closing tag: ", current_node.tag)
+					previous_node = previous_node.parent
+					fmt.Println("Previous:" ,previous_node.tag, "Current: ",current_node.tag)
+				} else {
+					previous_node = root_node
+				}
+				previous_node.children = append(previous_node.children, current_node)
 			} else {
-				current_node = &Node{attributes: []NodeAttribute{}, parent: &current_node, children: []Node{}}
+				current_node = &Node{attributes: []NodeAttribute{}, parent: current_node, children: make([]*Node, 0)}
+				//all_nodes = append(all_nodes, current_node)
 				if root_node == nil {
 					root_node = current_node
 				} else {
@@ -59,28 +86,29 @@ func Parser(tokens []Token) *Node {
 				}
 			}
 		case CloseTag:
-			if previous_node != nil {
-				previous_node.children = append(previous_node.children, current_node)
-			}
-
-			previous_node = &current_node
+			//if previous_node != nil {
+			//	previous_node.children = append(previous_node.children, current_node)
+			//}
+			previous_node = current_node
 		case Attribute:
 			if current_node.tag == "" {
+				fmt.Println("Tag: ", current_token.value)
 				current_node.tag = current_token.value
 			} else {
-				current_nodeattr = NodeAttr{name: current_token.value, values: []string{}}
+				current_nodeattr = NodeAttribute{name: current_token.value, values: []string{}}
 			}
 		case Value:
-			attribute_values = strings.Split(current_token.value, " ", -1)
+			attribute_values = strings.Split(current_token.value, " ")
 			current_nodeattr.values = attribute_values
 
 			current_node.attributes = append(current_node.attributes, current_nodeattr)
 		case Text:
-			current_node.text = current_token.value
+			previous_node.text = current_token.value
 
 		}
 
-	}
+		pos += 1
 
+	}
 	return root_node
 }
