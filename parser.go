@@ -1,8 +1,8 @@
 package main
 
 import (
-	"strings"
 	"fmt"
+	"strings"
 )
 
 type NodeAttribute struct {
@@ -20,10 +20,9 @@ type Node struct {
 	children []*Node
 }
 
-
 func WalkNode(root *Node) {
 	fmt.Printf("New Node: %s, %s, %v, %v, self: %p parent: %p\n", root.tag, root.text, root.attributes, root.children, &root, root.parent)
-	//fmt.Printf("New Node: %s, self: %p, parent: %p\n",root.tag, root, root.parent) 
+	//fmt.Printf("New Node: %s, self: %p, parent: %p\n",root.tag, root, root.parent)
 	fmt.Println(len(root.children))
 	for _, child := range root.children {
 		//fmt.Printf("New Node: %s, %s, %v\n", child.tag, child.text, child.attributes)
@@ -37,11 +36,13 @@ func Parser(tokens []Token) *Node {
 	var current_node *Node
 	var previous_node *Node
 	var attribute_values []string
-	
+
 	//all_nodes := []*Node{}
 
 	var current_nodeattr NodeAttribute
+
 	var current_token Token
+	//var previous_token Token
 
 	max_depth := 0
 	current_depth := 0
@@ -53,6 +54,7 @@ func Parser(tokens []Token) *Node {
 		if pos >= tokens_length {
 			break
 		}
+		//previous_token = current_token
 		current_token = tokens[pos]
 		switch current_token.token_type {
 		case OpenTag:
@@ -78,6 +80,7 @@ func Parser(tokens []Token) *Node {
 		case CloseTag:
 			previous_node = current_node
 		case Attribute:
+			//fmt.Println(current_token.value)
 			if current_node.tag == "" {
 				current_node.tag = current_token.value
 			} else {

@@ -3,32 +3,40 @@ package main
 //import "fmt"
 import "testing"
 
-/*
-New Node: div, self: 0x2082543c0, parent: 0x0
-New Node: div2, self: 0x208254420, parent: 0x2082543c0
-New Node: h3, self: 0x208254480, parent: 0x208254420
-New Node: span, self: 0x208254540, parent: 0x2082544e0
-New Node: h2, self: 0x2082545a0, parent: 0x208254540
-End Tag:  h2
-End Tag:  span
-End Tag:  h3
-End Tag:  div2
-New Node: h1, self: 0x2082544e0, parent: 0x208254480
-End Tag:  h1
-End Tag:  div
-*/
+func TestTokenizerAndParser(t *testing.T) {
+	html := `
+<doctype html>
+<html>
+	<head>
+		<script> var x = "y"</script>
+	</head>
+	<body>
+		<h1> Hello World </h1>
+		<div class="main">
+			<p> Boo! </p>
+		</div>
+	</body>
+</html>	
+	`
 
-func TestParser(t *testing.T) {
+	tokens := Tokenizer(html)
+
+	root := Parser(tokens)
+
+	WalkNode(root)
+}
+
+/*func TestParser(t *testing.T) {
 	test_case := []Token{
 		Token{token_type: OpenTag, value: "<"},
 		Token{token_type: Attribute, value: "div"},
 		Token{token_type: CloseTag, value: ">"},
-		
+
 		Token{token_type: OpenTag, value: "<"},
 		Token{token_type: Attribute, value: "div2"},
 		Token{token_type: CloseTag, value: ">"},
-		
-		
+
+
 		Token{token_type: OpenTag, value: "<"},
 		Token{token_type: Attribute, value: "h3"},
 		Token{token_type: CloseTag, value: ">"},
@@ -55,14 +63,14 @@ func TestParser(t *testing.T) {
 
 
 		Token{token_type: OpenTag, value: "<"},
-		Token{token_type: Attribute, value: "span"},	
+		Token{token_type: Attribute, value: "span"},
 		Token{token_type: Attribute, value: "id"},
 		Token{token_type: Assign, value: "="},
 		Token{token_type: Quote, value: "\""},
 		Token{token_type: Value, value: "this-is-an-id"},
 		Token{token_type: Quote, value: "\""},
 		Token{token_type: CloseTag, value: ">"},
-		
+
 		Token{token_type: OpenTag, value: "<"},
 		Token{token_type: Attribute, value: "h2"},
 		Token{token_type: Attribute, value: "id"},
@@ -86,7 +94,7 @@ func TestParser(t *testing.T) {
 		Token{token_type: ForwardSlash, value: "/"},
 		Token{token_type: Attribute, value: "span"},
 		Token{token_type: CloseTag, value: ">"},
-		
+
 		Token{token_type: OpenTag, value: "<"},
 		Token{token_type: ForwardSlash, value: "/"},
 		Token{token_type: Attribute, value: "div"},
@@ -122,10 +130,12 @@ func TestParser(t *testing.T) {
 			},
 		},
 	}
-	
+
 	//WalkNode(&node)
 
-	root := Parser(test_case)
+	_ := Parser(test_case)
 	//fmt.Println(root)
 	WalkNode(root)
 }
+
+*/

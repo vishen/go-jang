@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"strings"
 )
 
@@ -134,8 +133,4 @@ func Tokenizer(input string) []Token {
 	}
 
 	return tokens
-}
-
-func main() {
-	fmt.Println("Hello, Mac!")
 }
