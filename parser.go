@@ -26,8 +26,8 @@ func WalkNode(root *Node) {
 	//fmt.Printf("New Node: %s, self: %p, parent: %p\n",root.tag, root, root.parent) 
 	fmt.Println(len(root.children))
 	for _, child := range root.children {
-		fmt.Printf("New Node: %s, %s, %v\n", child.tag, child.text, child.attributes)
-		//WalkNode(child)
+		//fmt.Printf("New Node: %s, %s, %v\n", child.tag, child.text, child.attributes)
+		WalkNode(child)
 	}
 	fmt.Println("End Tag: ", root.tag)
 }
@@ -60,21 +60,11 @@ func Parser(tokens []Token) *Node {
 				// Need to close of current node
 				pos += 3
 				current_depth -= 1
-				if previous_node != nil {
-					
-					//previous_node.parent.children = append(previous_node.parent.children, current_node)
+				if current_node.parent != nil {
+					previous_node = current_node.parent
+					previous_node.children = append(previous_node.children, current_node)
+					current_node = previous_node
 				}
-
-
-				current_node = previous_node
-				if previous_node.parent != nil {
-					fmt.Println("Closing tag: ", current_node.tag)
-					previous_node = previous_node.parent
-					fmt.Println("Previous:" ,previous_node.tag, "Current: ",current_node.tag)
-				} else {
-					previous_node = root_node
-				}
-				previous_node.children = append(previous_node.children, current_node)
 			} else {
 				current_node = &Node{attributes: []NodeAttribute{}, parent: current_node, children: make([]*Node, 0)}
 				//all_nodes = append(all_nodes, current_node)
@@ -86,13 +76,9 @@ func Parser(tokens []Token) *Node {
 				}
 			}
 		case CloseTag:
-			//if previous_node != nil {
-			//	previous_node.children = append(previous_node.children, current_node)
-			//}
 			previous_node = current_node
 		case Attribute:
 			if current_node.tag == "" {
-				fmt.Println("Tag: ", current_token.value)
 				current_node.tag = current_token.value
 			} else {
 				current_nodeattr = NodeAttribute{name: current_token.value, values: []string{}}
