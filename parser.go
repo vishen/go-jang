@@ -65,7 +65,10 @@ func Parser(tokens []Token) *Node {
 				if current_node.parent != nil {
 					previous_node = current_node.parent
 					previous_node.children = append(previous_node.children, current_node)
+					// fmt.Printf("Adding child %s ###### %s\n", current_node.tag, previous_node.tag)
+					fmt.Printf("%v [%p]\n", previous_node, previous_node)
 					current_node = previous_node
+
 				}
 			} else {
 				current_node = &Node{attributes: []NodeAttribute{}, parent: current_node, children: make([]*Node, 0)}
@@ -79,13 +82,11 @@ func Parser(tokens []Token) *Node {
 			}
 		case CloseTag:
 			previous_node = current_node
+		case Tag:
+			current_node.tag = current_token.value
 		case Attribute:
 			//fmt.Println(current_token.value)
-			if current_node.tag == "" {
-				current_node.tag = current_token.value
-			} else {
-				current_nodeattr = NodeAttribute{name: current_token.value, values: []string{}}
-			}
+			current_nodeattr = NodeAttribute{name: current_token.value, values: []string{}}
 		case Value:
 			attribute_values = strings.Split(current_token.value, " ")
 			current_nodeattr.values = attribute_values
