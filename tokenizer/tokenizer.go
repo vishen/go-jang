@@ -1,4 +1,4 @@
-package main
+package tokenizer
 
 import (
 	"fmt"
@@ -8,15 +8,15 @@ import (
 type TokenType int
 
 type Token struct {
-	token_type TokenType
-	value      string
-	column     int
-	line       int
+	Token_type TokenType
+	Value      string
+	Column     int
+	Line       int
 }
 
 func (t Token) String() string {
 	var token_type_string string
-	switch t.token_type {
+	switch t.Token_type {
 	case OpenTag:
 		token_type_string = "OpenTag"
 	case CloseTag:
@@ -36,19 +36,8 @@ func (t Token) String() string {
 	default:
 		token_type_string = "Unknown"
 	}
-	return fmt.Sprintf("[%s] %s %d:%d", token_type_string, t.value, t.line, t.column)
+	return fmt.Sprintf("[%s] %s %d:%d", token_type_string, t.Value, t.Line, t.Column)
 }
-
-const (
-	OpenTag TokenType = iota
-	CloseTag
-	Attribute
-	Value
-	Text
-	Assign
-	ForwardSlash
-	Tag
-)
 
 func consumeValue(input string, pos int) (string, int) {
 	// Start consuming an attributes value
@@ -139,29 +128,29 @@ func Tokenizer(input string) []Token {
 			column = 0
 		case '<':
 			in_declaration = true
-			tokens = append(tokens, Token{token_type: OpenTag, value: "<", column: column, line: line})
+			tokens = append(tokens, Token{Token_type: OpenTag, Value: "<", Column: column, Line: line})
 		case '>':
 			in_declaration = false
-			tokens = append(tokens, Token{token_type: CloseTag, value: ">", column: column, line: line})
+			tokens = append(tokens, Token{Token_type: CloseTag, Value: ">", Column: column, Line: line})
 		case '/':
-			tokens = append(tokens, Token{token_type: ForwardSlash, value: "/", column: column, line: line})
+			tokens = append(tokens, Token{Token_type: ForwardSlash, Value: "/", Column: column, Line: line})
 		case '=':
-			tokens = append(tokens, Token{token_type: Assign, value: "=", column: column, line: line})
+			tokens = append(tokens, Token{Token_type: Assign, Value: "=", Column: column, Line: line})
 		case ' ', '\t':
 		// pos += 1
 		// column += 1
 		// continue
 		default:
 			last_token = tokens[len(tokens)-1]
-			last_token_type = last_token.token_type
+			last_token_type = last_token.Token_type
 			if last_token_type == CloseTag {
 				value, count := consumeText(input, pos)
 				pos = count
-				tokens = append(tokens, Token{token_type: Text, value: value, column: column, line: line})
+				tokens = append(tokens, Token{Token_type: Text, Value: value, Column: column, Line: line})
 			} else if last_token_type == Assign {
 				value, count := consumeValue(input, pos)
 				pos = count
-				tokens = append(tokens, Token{token_type: Value, value: value, column: column, line: line})
+				tokens = append(tokens, Token{Token_type: Value, Value: value, Column: column, Line: line})
 			} else if in_declaration {
 				value, count := consumeAttribute(input, pos)
 				pos = count
@@ -172,7 +161,7 @@ func Tokenizer(input string) []Token {
 					tmp_token_type = Attribute
 				}
 
-				tokens = append(tokens, Token{token_type: tmp_token_type, value: value, column: column, line: line})
+				tokens = append(tokens, Token{Token_type: tmp_token_type, Value: value, Column: column, Line: line})
 			}
 		}
 		column += 1
