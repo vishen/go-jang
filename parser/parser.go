@@ -15,6 +15,7 @@ type NodeAttribute struct {
 	Values []string
 }
 
+// TODO(vishen): Maybe add the depth of a node?
 type Node struct {
 	Id         int
 	Tag        string
@@ -24,6 +25,61 @@ type Node struct {
 
 	Parent   *Node
 	Children []*Node
+}
+
+// TODO(vishen): Maybe need to move these into a seperate directory
+// and allow them to take a list of nodes, so we can potentially chain them.
+func (self Node) FindTag(tag string) []*Node {
+	found_nodes := []*Node{}
+
+	if self.Tag == tag {
+		found_nodes = append(found_nodes, &self)
+	}
+
+	for _, child := range self.Children {
+		found_nodes = append(found_nodes, child.FindTag(tag)...)
+	}
+
+	return found_nodes
+}
+
+func (self Node) FindAttribute(attr_name string) []*Node {
+	found_nodes := []*Node{}
+
+	for _, attr := range self.Attributes {
+		if attr.Name == attr_name {
+			found_nodes = append(found_nodes, &self)
+			break
+		}
+	}
+
+	for _, child := range self.Children {
+		found_nodes = append(found_nodes, child.FindAttribute(attr_name)...)
+	}
+
+	return found_nodes
+}
+
+func (self Node) FindAttributeEquals(attr_name, equals string) []*Node {
+	found_nodes := []*Node{}
+
+	for _, attr := range self.Attributes {
+		if attr.Name == attr_name {
+			for _, value := range attr.Values {
+				if value == equals {
+					found_nodes = append(found_nodes, &self)
+					break
+				}
+			}
+
+		}
+	}
+
+	for _, child := range self.Children {
+		found_nodes = append(found_nodes, child.FindAttributeEquals(attr_name, equals)...)
+	}
+
+	return found_nodes
 }
 
 func WalkNode(root *Node) {

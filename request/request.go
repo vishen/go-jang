@@ -2,7 +2,7 @@ package request
 
 import (
 	"errors"
-	"fmt"
+	_ "fmt"
 	"io/ioutil"
 	"net/http"
 
@@ -23,12 +23,24 @@ func Get(url string) (*parser.Node, error) {
 		return nil, err
 	}
 
-	fmt.Println(string(contents))
+	// fmt.Println(string(contents))
 	tokens := tokenizer.Tokenizer(string(contents))
 
 	if len(tokens) == 0 {
 		return nil, errors.New("Response returned no Tokens.")
 	}
+
+	// for i, token := range tokens {
+	// 	fmt.Println(i, token)
+	// for _, ch := range token.Value {
+	// 	fmt.Println(ch)
+	// }
+	// fmt.Println(token.Value)
+
+	// if i == 50 {
+	// 	break
+	// }
+	// }
 
 	root := parser.Parser(tokens)
 

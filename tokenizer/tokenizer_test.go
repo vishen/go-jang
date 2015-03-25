@@ -123,6 +123,41 @@ Hello World
 				Token{Token_type: CloseTag, Value: ">"},
 			},
 		},
+		{
+			`<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"> 
+		<html xmlns="http://www.w3.org/1999/xhtml">Hello World`,
+			[]Token{
+				Token{Token_type: OpenTag, Value: "<"},
+				Token{Token_type: Tag, Value: "!DOCTYPE"},
+				Token{Token_type: Attribute, Value: "html"},
+				Token{Token_type: Attribute, Value: "PUBLIC"},
+				Token{Token_type: Attribute, Value: "-//W3C//DTD XHTML 1.0 Transitional//EN"},
+				Token{Token_type: Attribute, Value: "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"},
+				Token{Token_type: CloseTag, Value: ">"},
+
+				Token{Token_type: OpenTag, Value: "<"},
+				Token{Token_type: Tag, Value: "html"},
+				Token{Token_type: Attribute, Value: "xmlns"},
+				Token{Token_type: Assign, Value: "="},
+				Token{Token_type: Value, Value: "http://www.w3.org/1999/xhtml"},
+				Token{Token_type: CloseTag, Value: ">"},
+
+				Token{Token_type: Text, Value: "Hello World"},
+			},
+		},
+		{
+			`<html><!-- This is a comment --></html>`,
+			[]Token{
+				Token{Token_type: OpenTag, Value: "<"},
+				Token{Token_type: Tag, Value: "html"},
+				Token{Token_type: CloseTag, Value: ">"},
+
+				Token{Token_type: OpenTag, Value: "<"},
+				Token{Token_type: ForwardSlash, Value: "/"},
+				Token{Token_type: Tag, Value: "html"},
+				Token{Token_type: CloseTag, Value: ">"},
+			},
+		},
 	}
 
 	for _, c := range cases {
@@ -132,4 +167,5 @@ Hello World
 			t.Error("Failed")
 		}
 	}
+
 }

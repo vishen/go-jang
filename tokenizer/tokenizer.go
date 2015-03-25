@@ -72,15 +72,30 @@ func consumeValue(input string, pos int) (string, int) {
 
 func consumeAttribute(input string, pos int) (string, int) {
 
+	var end_char uint8 = ' '
+	in_quotes := false
+	if input[pos] == '"' || input[pos] == '\'' {
+		end_char = input[pos]
+		pos++
+
+		in_quotes = true
+	}
+
 	current := pos
 	for {
 		if current >= len(input) {
 			break
 		}
-
-		switch input[current] {
-		case '>', '/', '=', ' ':
-			return strings.TrimSpace(input[pos:current]), current - 1
+		if !in_quotes {
+			switch input[current] {
+			case '>', '/', '=', ' ':
+				return strings.TrimSpace(input[pos:current]), current - 1
+			}
+		} else {
+			switch input[current] {
+			case end_char:
+				return strings.TrimSpace(input[pos:current]), current
+			}
 		}
 		current += 1
 	}
@@ -127,41 +142,66 @@ func Tokenizer(input string) []Token {
 			line += 1
 			column = 0
 		case '<':
-			in_declaration = true
-			tokens = append(tokens, Token{Token_type: OpenTag, Value: "<", Column: column, Line: line})
+			// Ignore comments for now
+			// TODO(vishen): Make some more tokens for comments - probably easier if
+			// this is done in the tokenizer and just add a new Comment token.
+			if input[pos+1] == '!' && input[pos+2] == '-' {
+				tmp := pos + 1
+				for {
+					if input[tmp] == '>' && input[tmp-1] == '-' {
+						pos = tmp
+						break
+					}
+
+					tmp += 1
+				}
+			} else {
+				in_declaration = true
+				tokens = append(tokens, Token{Token_type: OpenTag, Value: "<", Column: column, Line: line})
+			}
 		case '>':
 			in_declaration = false
 			tokens = append(tokens, Token{Token_type: CloseTag, Value: ">", Column: column, Line: line})
 		case '/':
-			tokens = append(tokens, Token{Token_type: ForwardSlash, Value: "/", Column: column, Line: line})
-		case '=':
-			tokens = append(tokens, Token{Token_type: Assign, Value: "=", Column: column, Line: line})
-		case ' ', '\t':
-		// pos += 1
-		// column += 1
-		// continue
-		default:
-			last_token = tokens[len(tokens)-1]
-			last_token_type = last_token.Token_type
-			if last_token_type == CloseTag {
+			// Because of javascript comments we just assume if we see a '/'
+			// and we are not in the declaration just comsime the Text
+
+			//TODO(vishen): Find a better way to handle this
+			if !in_declaration {
 				value, count := consumeText(input, pos)
 				pos = count
 				tokens = append(tokens, Token{Token_type: Text, Value: value, Column: column, Line: line})
-			} else if last_token_type == Assign {
-				value, count := consumeValue(input, pos)
-				pos = count
-				tokens = append(tokens, Token{Token_type: Value, Value: value, Column: column, Line: line})
-			} else if in_declaration {
-				value, count := consumeAttribute(input, pos)
-				pos = count
+			} else {
+				tokens = append(tokens, Token{Token_type: ForwardSlash, Value: "/", Column: column, Line: line})
+			}
+		case '=':
+			tokens = append(tokens, Token{Token_type: Assign, Value: "=", Column: column, Line: line})
+		case ' ', '\t', '\r':
+			// Leave empty
+		default:
+			if len(tokens) > 0 {
+				last_token = tokens[len(tokens)-1]
+				last_token_type = last_token.Token_type
+				if last_token_type == CloseTag {
+					value, count := consumeText(input, pos)
+					pos = count
+					tokens = append(tokens, Token{Token_type: Text, Value: value, Column: column, Line: line})
+				} else if last_token_type == Assign {
+					value, count := consumeValue(input, pos)
+					pos = count
+					tokens = append(tokens, Token{Token_type: Value, Value: value, Column: column, Line: line})
+				} else if in_declaration {
+					value, count := consumeAttribute(input, pos)
+					pos = count
 
-				if last_token_type == OpenTag || last_token_type == ForwardSlash {
-					tmp_token_type = Tag
-				} else {
-					tmp_token_type = Attribute
+					if last_token_type == OpenTag || last_token_type == ForwardSlash {
+						tmp_token_type = Tag
+					} else {
+						tmp_token_type = Attribute
+					}
+
+					tokens = append(tokens, Token{Token_type: tmp_token_type, Value: value, Column: column, Line: line})
 				}
-
-				tokens = append(tokens, Token{Token_type: tmp_token_type, Value: value, Column: column, Line: line})
 			}
 		}
 		column += 1
