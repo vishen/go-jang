@@ -5,7 +5,16 @@ import "testing"
 
 func basicCheckArrayEquals(arr1 []Token, arr2 []Token) bool {
 	if len(arr1) != len(arr2) {
-		fmt.Printf("[Error] Mismatched number of tokens; %d & %d", len(arr1), len(arr2))
+		fmt.Printf("[Error] Mismatched number of tokens; %d & %d\n", len(arr1), len(arr2))
+		fmt.Println("Got:")
+		for i, token := range arr1 {
+			fmt.Println(i, token)
+		}
+		fmt.Println()
+		fmt.Println("Wanted:")
+		for i, token := range arr2 {
+			fmt.Println(i, token)
+		}
 		return false
 	}
 
@@ -129,10 +138,22 @@ Hello World
 			[]Token{
 				Token{Token_type: OpenTag, Value: "<"},
 				Token{Token_type: Tag, Value: "!DOCTYPE"},
+
 				Token{Token_type: Attribute, Value: "html"},
+				Token{Token_type: Assign, Value: "="},
+				Token{Token_type: Value, Value: ""},
+
 				Token{Token_type: Attribute, Value: "PUBLIC"},
+				Token{Token_type: Assign, Value: "="},
+				Token{Token_type: Value, Value: ""},
+
 				Token{Token_type: Attribute, Value: "-//W3C//DTD XHTML 1.0 Transitional//EN"},
+				Token{Token_type: Assign, Value: "="},
+				Token{Token_type: Value, Value: ""},
+
 				Token{Token_type: Attribute, Value: "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"},
+				Token{Token_type: Assign, Value: "="},
+				Token{Token_type: Value, Value: ""},
 				Token{Token_type: CloseTag, Value: ">"},
 
 				Token{Token_type: OpenTag, Value: "<"},

@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/vishen/go-jang/parser"
-	"github.com/vishen/go-jang/request"
+	"github.com/vishen/go-jang/query"
 	"os"
 )
 
@@ -15,12 +15,23 @@ func printNodes(nodes []*parser.Node) {
 
 func main() {
 	url := os.Args[1]
-	fmt.Println(url)
-	root, _ := request.Get(url)
-	// parser.WalkNode(root)
+	lookup := os.Args[2]
+	fmt.Println(url, lookup)
 
-	// root.FindAndPrintAttributes("href")
+	// q, err := query.GetQueryFromUrl(url)
 
-	printNodes(root.FindTag("div"))
+	// if err != nil {
+	// 	panic(err)
+	// }
+
+	// printNodes(q.T("div").Nodes)
+
+	q, err := query.GetGQueryFromUrl(url, lookup)
+
+	if err != nil {
+		panic(err)
+	}
+
+	printNodes(q.Nodes)
 
 }

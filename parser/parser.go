@@ -27,67 +27,11 @@ type Node struct {
 	Children []*Node
 }
 
-// TODO(vishen): Maybe need to move these into a seperate directory
-// and allow them to take a list of nodes, so we can potentially chain them.
-func (self Node) FindTag(tag string) []*Node {
-	found_nodes := []*Node{}
-
-	if self.Tag == tag {
-		found_nodes = append(found_nodes, &self)
-	}
-
-	for _, child := range self.Children {
-		found_nodes = append(found_nodes, child.FindTag(tag)...)
-	}
-
-	return found_nodes
-}
-
-func (self Node) FindAttribute(attr_name string) []*Node {
-	found_nodes := []*Node{}
-
-	for _, attr := range self.Attributes {
-		if attr.Name == attr_name {
-			found_nodes = append(found_nodes, &self)
-			break
-		}
-	}
-
-	for _, child := range self.Children {
-		found_nodes = append(found_nodes, child.FindAttribute(attr_name)...)
-	}
-
-	return found_nodes
-}
-
-func (self Node) FindAttributeEquals(attr_name, equals string) []*Node {
-	found_nodes := []*Node{}
-
-	for _, attr := range self.Attributes {
-		if attr.Name == attr_name {
-			for _, value := range attr.Values {
-				if value == equals {
-					found_nodes = append(found_nodes, &self)
-					break
-				}
-			}
-
-		}
-	}
-
-	for _, child := range self.Children {
-		found_nodes = append(found_nodes, child.FindAttributeEquals(attr_name, equals)...)
-	}
-
-	return found_nodes
-}
-
 func WalkNode(root *Node) {
+	// Only used for debugging at the moment.
+	// Provides information about the structure of a node.
 	fmt.Printf("New Node: %s, %s, %v, %v, self: %p parent: %p\n", root.Tag, root.Text, root.Attributes, root.Children, &root, root.Parent)
-	//fmt.Printf("New Node: %s, self: %p, parent: %p\n",root.Tag, root, root.parent)
-	// fmt.Println(len(root.Children))
 	for _, child := range root.Children {
-		//fmt.Printf("New Node: %s, %s, %v\n", child.Tag, child.text, child.attributes)
 		WalkNode(child)
 	}
 	fmt.Println("End Tag: ", root.Tag)
@@ -170,8 +114,8 @@ func Parser(tokens []tokenizer.Token) *Node {
 			case tokenizer.Value:
 				attribute_values = strings.Split(current_token.Value, " ")
 				current_nodeattr.Values = attribute_values
-
 				current_node.Attributes = append(current_node.Attributes, current_nodeattr)
+
 			case tokenizer.Text:
 				current_node.Text = current_token.Value
 

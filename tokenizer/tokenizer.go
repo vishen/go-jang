@@ -161,6 +161,16 @@ func Tokenizer(input string) []Token {
 			}
 		case '>':
 			in_declaration = false
+			// Sometimes an Attribute isn't followed by an Assign and Value.
+			// In this case just pretend that there is blank ones for the parser
+			// to pick up the Attribute. Not a huge fan of this.
+			// TODO(vishen): Find a better way of doing this.
+			if last_token_type == Attribute {
+				tokens = append(tokens,
+					Token{Token_type: Assign, Value: "=", Column: column, Line: line},
+					Token{Token_type: Value, Value: "", Column: column, Line: line},
+				)
+			}
 			tokens = append(tokens, Token{Token_type: CloseTag, Value: ">", Column: column, Line: line})
 		case '/':
 			// Because of javascript comments we just assume if we see a '/'
@@ -191,6 +201,18 @@ func Tokenizer(input string) []Token {
 					pos = count
 					tokens = append(tokens, Token{Token_type: Value, Value: value, Column: column, Line: line})
 				} else if in_declaration {
+
+					// Sometimes an Attribute isn't followed by an Assign and Value.
+					// In this case just pretend that there is blank ones for the parser
+					// to pick up the Attribute. Not a huge fan of this.
+					// TODO(vishen): Find a better way of doing this.
+					if last_token_type == Attribute {
+						tokens = append(tokens,
+							Token{Token_type: Assign, Value: "=", Column: column, Line: line},
+							Token{Token_type: Value, Value: "", Column: column, Line: line},
+						)
+					}
+
 					value, count := consumeAttribute(input, pos)
 					pos = count
 
