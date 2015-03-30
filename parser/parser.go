@@ -15,16 +15,41 @@ type NodeAttribute struct {
 	Values []string
 }
 
+func (self NodeAttribute) String() string {
+	return fmt.Sprintf("%s=\"%s\"", self.Name, strings.Join(self.Values, " "))
+}
+
 // TODO(vishen): Maybe add the depth of a node?
 type Node struct {
 	Id         int
 	Tag        string
 	Attributes []NodeAttribute
 
+	Column int
+	Line   int
+
 	Text string
 
 	Parent   *Node
 	Children []*Node
+}
+
+func (self Node) String() string {
+	return fmt.Sprintf("[%d] %s (%d:%d), %d children, %s, %s", self.Id, self.Tag, self.Line,
+		self.Column, len(self.Children), self.Attributes, self.Text)
+}
+
+func (self Node) AllChildren() []*Node {
+	children := []*Node{}
+
+	children = append(children, self.Children...)
+
+	for _, child := range self.Children {
+		children = append(children, child.AllChildren()...)
+
+	}
+
+	return children
 }
 
 func WalkNode(root *Node) {
@@ -97,7 +122,12 @@ func Parser(tokens []tokenizer.Token) *Node {
 					current_depth -= 1
 
 				} else {
-					current_node = &Node{Id: current_id, Attributes: []NodeAttribute{}, Children: make([]*Node, 0)}
+					current_node = &Node{Id: current_id,
+						Attributes: []NodeAttribute{},
+						Children:   make([]*Node, 0),
+						Column:     current_token.Column,
+						Line:       current_token.Line,
+					}
 					current_id++
 					if root_node == nil {
 						root_node = current_node

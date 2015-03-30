@@ -1,7 +1,7 @@
 package query
 
 import (
-	"fmt"
+	// "fmt"
 	"github.com/vishen/go-jang/parser"
 	"github.com/vishen/go-jang/request"
 )
@@ -16,7 +16,11 @@ const (
 	EQUALS
 	VALUE
 	SPACE
+	OPEN_BRACKET
+	CLOSE_BRACKET
 	UNKNOWN
+
+	ALL = "ALL"
 )
 
 type GQueryToken struct {
@@ -43,7 +47,7 @@ func consumeAttribute(input string, pos int) (string, int) {
 			break
 		}
 		switch input[tmp] {
-		case '#', '.', '=', ' ':
+		case '#', '.', '=', ' ', '[', ']':
 			finished = true
 			tmp--
 		}
@@ -56,9 +60,10 @@ func consumeAttribute(input string, pos int) (string, int) {
 }
 
 func tokenzier(input string) []GQueryToken {
+	var value string
+
 	tokens := []GQueryToken{}
 	pos := 0
-	var value string
 
 	for {
 
@@ -75,13 +80,17 @@ func tokenzier(input string) []GQueryToken {
 			tokens = append(tokens, GQueryToken{token_type: EQUALS, value: "="})
 		case ' ':
 			tokens = append(tokens, GQueryToken{token_type: SPACE, value: " "})
+		case '[':
+			tokens = append(tokens, GQueryToken{token_type: OPEN_BRACKET, value: "["})
+		case ']':
+			tokens = append(tokens, GQueryToken{token_type: CLOSE_BRACKET, value: "]"})
 		case '^':
 			value, pos = consumeAttribute(input, pos+1)
 			tokens = append(tokens, GQueryToken{token_type: TAG, value: value})
 		default:
 			value, pos = consumeAttribute(input, pos)
 
-			if len(tokens) > 0 && tokens[len(tokens)-1].token_type == SPACE {
+			if len(tokens) > 0 && tokens[len(tokens)-1].token_type == SPACE || tokens[len(tokens)-1].token_type == OPEN_BRACKET {
 				tokens = append(tokens, GQueryToken{token_type: ATTRIBUTE, value: value})
 			} else {
 				tokens = append(tokens, GQueryToken{token_type: VALUE, value: value})
@@ -95,14 +104,18 @@ func tokenzier(input string) []GQueryToken {
 }
 
 func GQuery(lookup string, node *parser.Node) *Query {
-
-	// Handles the `#`, `.`, `<attr>` and `<attr>=<valiue>`
-
-	tokens := tokenzier(lookup)
-
 	var token GQueryToken
+	var tokens []GQueryToken
 
 	query := NewQueryFromNode(node)
+	current_node := true
+
+	if lookup == ALL {
+		query.Nodes = node.AllChildren()
+		return query
+	}
+
+	tokens = tokenzier(lookup)
 
 	pos := 0
 
@@ -114,26 +127,50 @@ func GQuery(lookup string, node *parser.Node) *Query {
 
 		token = tokens[pos]
 
-		fmt.Println(tokens)
-
 		switch token.token_type {
 		case ID:
 			pos++
 			token = tokens[pos]
-			query = query.FindByAttributeEquals("id", token.value)
+			if current_node {
+				query = query.FindByAttributeEquals("id", token.value)
+			} else {
+				query = query.FindChildrenByAttributeEquals("id", token.value)
+
+			}
+			current_node = true
 		case CLASS:
 			pos++
 			token = tokens[pos]
-			query = query.FindByAttributeEquals("class", token.value)
+			if current_node {
+				query = query.FindByAttributeEquals("class", token.value)
+			} else {
+				query = query.FindChildrenByAttributeEquals("class", token.value)
+			}
+			current_node = true
 		case TAG:
 			query = query.FindByTag(token.value)
+			current_node = true
+		case SPACE, CLOSE_BRACKET:
+			current_node = false
+		case OPEN_BRACKET:
+			current_node = true
 		case ATTRIBUTE:
 			attr_name := token.value
 			if pos+2 < len(tokens) && tokens[pos+1].token_type == EQUALS && tokens[pos+2].token_type == VALUE {
-				query = query.FindByAttributeEquals(attr_name, tokens[pos+2].value)
+				if current_node {
+					query = query.FindByAttributeEquals(attr_name, tokens[pos+2].value)
+				} else {
+					query = query.FindChildrenByAttributeEquals(attr_name, tokens[pos+2].value)
+				}
 			} else {
-				query = query.FindByAttribute(attr_name)
+				if current_node {
+					query = query.FindByAttribute(attr_name)
+				} else {
+					query = query.FindChildrenByAttribute(attr_name)
+				}
 			}
+
+			current_node = true
 		}
 
 		pos++

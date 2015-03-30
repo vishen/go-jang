@@ -44,7 +44,20 @@ func (self Query) FindByAttribute(attr_name string) *Query {
 	found_nodes := []*parser.Node{}
 
 	for _, node := range self.Nodes {
-		found_nodes = append(found_nodes, findAttribute(attr_name, node)...)
+		found_nodes = append(found_nodes, findAttribute(attr_name, node, false)...)
+
+	}
+
+	return &Query{Nodes: found_nodes}
+
+}
+
+func (self Query) FindChildrenByAttribute(attr_name string) *Query {
+
+	found_nodes := []*parser.Node{}
+
+	for _, node := range self.Nodes {
+		found_nodes = append(found_nodes, findAttribute(attr_name, node, true)...)
 
 	}
 
@@ -57,7 +70,20 @@ func (self Query) FindByAttributeEquals(attr_name, equals string) *Query {
 	found_nodes := []*parser.Node{}
 
 	for _, node := range self.Nodes {
-		found_nodes = append(found_nodes, findAttributeEquals(attr_name, equals, node)...)
+		found_nodes = append(found_nodes, findAttributeEquals(attr_name, equals, node, false)...)
+
+	}
+
+	return &Query{Nodes: found_nodes}
+
+}
+
+func (self Query) FindChildrenByAttributeEquals(attr_name, equals string) *Query {
+
+	found_nodes := []*parser.Node{}
+
+	for _, node := range self.Nodes {
+		found_nodes = append(found_nodes, findAttributeEquals(attr_name, equals, node, true)...)
 
 	}
 
@@ -82,7 +108,7 @@ func findTag(tag string, node *parser.Node) []*parser.Node {
 	return found_nodes
 }
 
-func findAttribute(attr_name string, node *parser.Node) []*parser.Node {
+func findAttribute(attr_name string, node *parser.Node, search_children bool) []*parser.Node {
 	found_nodes := []*parser.Node{}
 
 	if node.Attributes != nil {
@@ -94,14 +120,15 @@ func findAttribute(attr_name string, node *parser.Node) []*parser.Node {
 		}
 	}
 
-	for _, child := range node.Children {
-		found_nodes = append(found_nodes, findAttribute(attr_name, child)...)
+	if search_children {
+		for _, child := range node.Children {
+			found_nodes = append(found_nodes, findAttribute(attr_name, child, search_children)...)
+		}
 	}
-
 	return found_nodes
 }
 
-func findAttributeEquals(attr_name, equals string, node *parser.Node) []*parser.Node {
+func findAttributeEquals(attr_name, equals string, node *parser.Node, search_children bool) []*parser.Node {
 	found_nodes := []*parser.Node{}
 
 	for _, attr := range node.Attributes {
@@ -116,8 +143,10 @@ func findAttributeEquals(attr_name, equals string, node *parser.Node) []*parser.
 		}
 	}
 
-	for _, child := range node.Children {
-		found_nodes = append(found_nodes, findAttributeEquals(attr_name, equals, child)...)
+	if search_children {
+		for _, child := range node.Children {
+			found_nodes = append(found_nodes, findAttributeEquals(attr_name, equals, child, search_children)...)
+		}
 	}
 
 	return found_nodes
@@ -126,14 +155,14 @@ func findAttributeEquals(attr_name, equals string, node *parser.Node) []*parser.
 /*
 	Wrapper functions to allow for easier chaining of methods.
 */
-func (self Query) T(tag string) *Query {
-	return self.FindByTag(tag)
-}
+// func (self Query) T(tag string) *Query {
+// 	return self.FindByTag(tag)
+// }
 
-func (self Query) A(attr_name string) *Query {
-	return self.FindByAttribute(attr_name)
-}
+// func (self Query) A(attr_name string) *Query {
+// 	return self.FindChildrenByAttribute(attr_name)
+// }
 
-func (self Query) Ae(attr_name, equals string) *Query {
-	return self.FindByAttributeEquals(attr_name, equals)
-}
+// func (self Query) Ae(attr_name, equals string) *Query {
+// 	return self.FindChildrenByAttributeEquals(attr_name, equals)
+// }

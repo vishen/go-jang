@@ -111,9 +111,7 @@ func consumeText(input string, pos int) (string, int) {
 
 		switch input[current] {
 		case '<':
-			if input[current+1] == '/' {
-				return strings.TrimSpace(input[pos:current]), current - 1
-			}
+			return strings.TrimSpace(input[pos:current]), current - 1
 		}
 		current += 1
 	}

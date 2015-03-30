@@ -179,6 +179,32 @@ Hello World
 				Token{Token_type: CloseTag, Value: ">"},
 			},
 		},
+		{
+			`<div>Hello <b>World</b></div>`,
+			[]Token{
+				Token{Token_type: OpenTag, Value: "<"},
+				Token{Token_type: Tag, Value: "div"},
+				Token{Token_type: CloseTag, Value: ">"},
+
+				Token{Token_type: Text, Value: "Hello"},
+
+				Token{Token_type: OpenTag, Value: "<"},
+				Token{Token_type: Tag, Value: "b"},
+				Token{Token_type: CloseTag, Value: ">"},
+
+				Token{Token_type: Text, Value: "World"},
+
+				Token{Token_type: OpenTag, Value: "<"},
+				Token{Token_type: ForwardSlash, Value: "/"},
+				Token{Token_type: Tag, Value: "b"},
+				Token{Token_type: CloseTag, Value: ">"},
+
+				Token{Token_type: OpenTag, Value: "<"},
+				Token{Token_type: ForwardSlash, Value: "/"},
+				Token{Token_type: Tag, Value: "div"},
+				Token{Token_type: CloseTag, Value: ">"},
+			},
+		},
 	}
 
 	for _, c := range cases {
