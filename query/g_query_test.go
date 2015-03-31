@@ -16,23 +16,41 @@ func TestTokenizer(t *testing.T) {
 		wanted []GQueryToken
 	}{
 		{
-			"^h1",
+			"h1",
 			[]GQueryToken{
 				createToken(TAG, "h1"),
 			},
 		},
 		{
-			"#hello .value data-href=hello ^div",
+			"div.hello",
+			[]GQueryToken{
+				createToken(TAG, "div"),
+				createToken(CLASS, "."),
+				createToken(VALUE, "hello"),
+			},
+		},
+		{
+			"div .hello",
+			[]GQueryToken{
+				createToken(TAG, "div"),
+				createToken(SPACE, " "),
+				createToken(CLASS, "."),
+				createToken(VALUE, "hello"),
+			},
+		},
+		{
+			"#hello .value[data-href=hello] div",
 			[]GQueryToken{
 				createToken(ID, "#"),
 				createToken(VALUE, "hello"),
 				createToken(SPACE, " "),
 				createToken(CLASS, "."),
 				createToken(VALUE, "value"),
-				createToken(SPACE, " "),
+				createToken(OPEN_BRACKET, "["),
 				createToken(ATTRIBUTE, "data-href"),
 				createToken(EQUALS, "="),
 				createToken(VALUE, "hello"),
+				createToken(CLOSE_BRACKET, "]"),
 				createToken(SPACE, " "),
 				createToken(TAG, "div"),
 			},
@@ -46,7 +64,7 @@ func TestTokenizer(t *testing.T) {
 
 		for i, token := range tokens {
 			if token.token_type != actual[i].token_type || token.value != actual[i].value {
-				fmt.Println("Tokens don't match.")
+				fmt.Println("Tokens don't match %d.", i)
 				fmt.Println("Got:", token)
 				fmt.Println("Wanted:", actual[i])
 

@@ -61,6 +61,7 @@ func consumeAttribute(input string, pos int) (string, int) {
 
 func tokenzier(input string) []GQueryToken {
 	var value string
+	var previous_token GQueryToken
 
 	tokens := []GQueryToken{}
 	pos := 0
@@ -89,11 +90,18 @@ func tokenzier(input string) []GQueryToken {
 			tokens = append(tokens, GQueryToken{token_type: TAG, value: value})
 		default:
 			value, pos = consumeAttribute(input, pos)
-
-			if len(tokens) > 0 && tokens[len(tokens)-1].token_type == SPACE || tokens[len(tokens)-1].token_type == OPEN_BRACKET {
-				tokens = append(tokens, GQueryToken{token_type: ATTRIBUTE, value: value})
+			if len(tokens) == 0 {
+				tokens = append(tokens, GQueryToken{token_type: TAG, value: value})
 			} else {
-				tokens = append(tokens, GQueryToken{token_type: VALUE, value: value})
+				previous_token = tokens[len(tokens)-1]
+
+				if previous_token.token_type == OPEN_BRACKET {
+					tokens = append(tokens, GQueryToken{token_type: ATTRIBUTE, value: value})
+				} else if previous_token.token_type == SPACE {
+					tokens = append(tokens, GQueryToken{token_type: TAG, value: value})
+				} else {
+					tokens = append(tokens, GQueryToken{token_type: VALUE, value: value})
+				}
 			}
 		}
 
