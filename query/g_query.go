@@ -1,7 +1,7 @@
 package query
 
 import (
-	// "fmt"
+	"fmt"
 	"github.com/vishen/go-jang/parser"
 	"github.com/vishen/go-jang/request"
 )
@@ -26,6 +26,35 @@ const (
 type GQueryToken struct {
 	token_type GQueryTokenType
 	value      string
+}
+
+func (t GQueryToken) String() string{
+	var token_string string
+
+	switch t.token_type {
+	case ID:
+		token_string = "ID"
+	case CLASS:
+		token_string = "CLASS"
+	case ATTRIBUTE:
+		token_string = "ATTRIBUTE"
+	case TAG:
+		token_string = "TAG"
+	case EQUALS:
+		token_string = "EQUALS"
+	case VALUE:
+		token_string = "VALUE"
+	case SPACE:
+		token_string = "SPACE"
+	case OPEN_BRACKET:
+		token_string = "OPEN_BRACKET"
+	case CLOSE_BRACKET:
+		token_string = "CLOSE_BRACKET"
+	default:
+		token_string = "UNKNOWN"
+	}
+
+	return fmt.Sprintf("\"%s=%s\"", token_string, t.value)
 }
 
 func GetGQueryFromUrl(url, lookup string) (*Query, error) {
@@ -116,7 +145,7 @@ func GQuery(lookup string, node *parser.Node) *Query {
 	var tokens []GQueryToken
 
 	query := NewQueryFromNode(node)
-	current_node := true
+	current_node := false
 
 	if lookup == ALL {
 		query.Nodes = node.AllChildren()
@@ -124,7 +153,6 @@ func GQuery(lookup string, node *parser.Node) *Query {
 	}
 
 	tokens = tokenzier(lookup)
-
 	pos := 0
 
 	for {
@@ -160,8 +188,8 @@ func GQuery(lookup string, node *parser.Node) *Query {
 			current_node = true
 		case SPACE, CLOSE_BRACKET:
 			current_node = false
-		case OPEN_BRACKET:
-			current_node = true
+		// case OPEN_BRACKET:
+		// 	current_node = true
 		case ATTRIBUTE:
 			attr_name := token.value
 			if pos+2 < len(tokens) && tokens[pos+1].token_type == EQUALS && tokens[pos+2].token_type == VALUE {
@@ -171,6 +199,7 @@ func GQuery(lookup string, node *parser.Node) *Query {
 					query = query.FindChildrenByAttributeEquals(attr_name, tokens[pos+2].value)
 				}
 			} else {
+				fmt.Println(current_node)
 				if current_node {
 					query = query.FindByAttribute(attr_name)
 				} else {
