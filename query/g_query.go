@@ -28,7 +28,7 @@ type GQueryToken struct {
 	value      string
 }
 
-func (t GQueryToken) String() string{
+func (t GQueryToken) String() string {
 	var token_string string
 
 	switch t.token_type {
@@ -92,6 +92,8 @@ func tokenzier(input string) []GQueryToken {
 	var value string
 	var previous_token GQueryToken
 
+	in_brackets := false
+
 	tokens := []GQueryToken{}
 	pos := 0
 
@@ -111,8 +113,10 @@ func tokenzier(input string) []GQueryToken {
 		case ' ':
 			tokens = append(tokens, GQueryToken{token_type: SPACE, value: " "})
 		case '[':
+			in_brackets = true
 			tokens = append(tokens, GQueryToken{token_type: OPEN_BRACKET, value: "["})
 		case ']':
+			in_brackets = false
 			tokens = append(tokens, GQueryToken{token_type: CLOSE_BRACKET, value: "]"})
 		case '^':
 			value, pos = consumeAttribute(input, pos+1)
@@ -124,7 +128,9 @@ func tokenzier(input string) []GQueryToken {
 			} else {
 				previous_token = tokens[len(tokens)-1]
 
-				if previous_token.token_type == OPEN_BRACKET {
+				if in_brackets && previous_token.token_type == EQUALS {
+					tokens = append(tokens, GQueryToken{token_type: VALUE, value: value})
+				} else if in_brackets {
 					tokens = append(tokens, GQueryToken{token_type: ATTRIBUTE, value: value})
 				} else if previous_token.token_type == SPACE {
 					tokens = append(tokens, GQueryToken{token_type: TAG, value: value})

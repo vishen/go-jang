@@ -55,6 +55,16 @@ func TestTokenizer(t *testing.T) {
 				createToken(TAG, "div"),
 			},
 		},
+		{
+			"[img src]",
+			[]GQueryToken{
+				createToken(OPEN_BRACKET, "["),
+				createToken(ATTRIBUTE, "img"),
+				createToken(SPACE, " "),
+				createToken(ATTRIBUTE, "src"),
+				createToken(CLOSE_BRACKET, "]"),
+			},
+		},
 	}
 
 	for _, test_case := range test_cases {
@@ -64,7 +74,7 @@ func TestTokenizer(t *testing.T) {
 
 		for i, token := range tokens {
 			if token.token_type != actual[i].token_type || token.value != actual[i].value {
-				fmt.Println("Tokens don't match %d.", i)
+				fmt.Printf("Tokens don't match %d.\n", i)
 				fmt.Println("Got:", token)
 				fmt.Println("Wanted:", actual[i])
 

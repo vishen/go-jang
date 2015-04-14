@@ -1,6 +1,7 @@
 package main
 
 import (
+	//` "encoding/json"
 	"fmt"
 	"github.com/vishen/go-jang/parser"
 	"github.com/vishen/go-jang/query"
@@ -10,6 +11,9 @@ import (
 func printNodes(nodes []*parser.Node) {
 	for _, node := range nodes {
 		fmt.Println(node)
+		//bytes, _ := json.MarshalIndent(&node, "", " ")
+		//bytes, _ := json.Marshal(&node)
+		//fmt.Println(string(bytes))
 	}
 }
 
@@ -33,5 +37,7 @@ func main() {
 	}
 
 	printNodes(q.Nodes)
+
+	//_ = json.NewEncoder(os.Stdout).Encode(&q.Nodes)
 
 }

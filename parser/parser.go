@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/vishen/go-jang/tokenizer"
 	"strings"
@@ -35,8 +36,14 @@ type Node struct {
 }
 
 func (self Node) String() string {
-	return fmt.Sprintf("[%d] %s (%d:%d), %d children, %s, %s", self.Id, self.Tag, self.Line,
-		self.Column, len(self.Children), self.Attributes, self.Text)
+	children_ids := []int{}
+
+	for _, child := range self.Children {
+		children_ids = append(children_ids, child.Id)
+	}
+
+	return fmt.Sprintf("[%d] %s (%d:%d), %d children%v, parent[%d], %s, %s", self.Id, self.Tag, self.Line,
+		self.Column, len(children_ids), children_ids, self.Parent.Id, self.Attributes, self.Text)
 }
 
 func (self Node) AllChildren() []*Node {
@@ -50,6 +57,34 @@ func (self Node) AllChildren() []*Node {
 	}
 
 	return children
+}
+
+func (self Node) MarshalJSON() ([]byte, error) {
+	//fmt.Printf("Marhsalling %q\n", self)
+	children := []int{}
+	for _, child := range self.Children {
+		children = append(children, child.Id)
+	}
+
+	return json.Marshal(&struct {
+		Id         int
+		Tag        string
+		Attributes []NodeAttribute
+
+		Column int
+		Line   int
+
+		Text     string
+		Children []int
+	}{
+		Id:         self.Id,
+		Tag:        self.Tag,
+		Attributes: self.Attributes,
+		Column:     self.Column,
+		Line:       self.Line,
+		Text:       self.Text,
+		Children:   children,
+	})
 }
 
 func WalkNode(root *Node) {
