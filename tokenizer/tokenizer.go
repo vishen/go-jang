@@ -33,6 +33,8 @@ func (t Token) String() string {
 		token_type_string = "ForwardSlash"
 	case Tag:
 		token_type_string = "Tag"
+	case Comment:
+		token_type_string = "Comment"
 	default:
 		token_type_string = "Unknown"
 	}
@@ -144,10 +146,12 @@ func Tokenizer(input string) []Token {
 			// TODO(vishen): Make some more tokens for comments - probably easier if
 			// this is done in the tokenizer and just add a new Comment token.
 			if input[pos+1] == '!' && input[pos+2] == '-' {
-				tmp := pos + 1
+				tmp := pos + 3
+				start := tmp + 1
 				for {
 					if input[tmp] == '>' && input[tmp-1] == '-' {
 						pos = tmp
+						tokens = append(tokens, Token{Token_type: Comment, Value: strings.TrimSpace(input[start : tmp-2]), Column: column, Line: line})
 						break
 					}
 

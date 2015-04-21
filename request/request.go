@@ -11,6 +11,7 @@ import (
 )
 
 func Get(url string) (*parser.Node, error) {
+	// fmt.Println(url)
 	response, err := http.Get(url)
 	if err != nil {
 		return nil, err

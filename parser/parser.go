@@ -169,6 +169,9 @@ func Parser(tokens []tokenizer.Token) *Node {
 					}
 					nodes = append(nodes, current_node)
 				}
+			case tokenizer.Comment:
+				nodes = append(nodes, &Node{Id: current_id, Tag: "comment", Text: current_token.Value, Column: current_token.Column, Line: current_token.Line})
+				current_id++
 			case tokenizer.CloseTag:
 				// previous_node = current_node
 			case tokenizer.Tag:

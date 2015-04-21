@@ -173,6 +173,8 @@ Hello World
 				Token{Token_type: Tag, Value: "html"},
 				Token{Token_type: CloseTag, Value: ">"},
 
+				Token{Token_type: Comment, Value: "This is a comment"},
+
 				Token{Token_type: OpenTag, Value: "<"},
 				Token{Token_type: ForwardSlash, Value: "/"},
 				Token{Token_type: Tag, Value: "html"},

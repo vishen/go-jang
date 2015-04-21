@@ -9,4 +9,5 @@ const (
 	Assign
 	ForwardSlash
 	Tag
+	Comment
 )
