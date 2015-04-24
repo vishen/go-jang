@@ -31,10 +31,8 @@ func (self *Query) Reset() {
 }
 
 func (self *Query) AddNodes(nodes []*parser.Node) {
-	// fmt.Println("AddNOdes", nodes)
 	self.Nodes = append(self.Nodes, nodes...)
-	// fmt.Println(self.Nodes)
-	// self.clean()
+	self.clean()
 }
 
 /*

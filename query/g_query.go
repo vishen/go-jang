@@ -208,6 +208,9 @@ func GQuery(lookup string, node *parser.Node) *Query {
 		// case OPEN_BRACKET:
 		// 	current_node = true
 		case AND:
+			// If we get to the AND token, assume that that is the end of the previous
+			// `Query` and add the query nodes to the return_query, then reset the `Query`
+			// so that we can move onto the next query.
 			return_query.AddNodes(query.Nodes)
 			query.Reset()
 			query.Nodes = append(query.Nodes, node)
