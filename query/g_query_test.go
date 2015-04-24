@@ -65,6 +65,25 @@ func TestTokenizer(t *testing.T) {
 				createToken(CLOSE_BRACKET, "]"),
 			},
 		},
+		{
+			"h1,h2",
+			[]GQueryToken{
+				createToken(TAG, "h1"),
+				createToken(AND, ","),
+				createToken(TAG, "h2"),
+			},
+		},
+		{
+			"div.hello, h1",
+			[]GQueryToken{
+				createToken(TAG, "div"),
+				createToken(CLASS, "."),
+				createToken(VALUE, "hello"),
+				createToken(AND, ","),
+				createToken(SPACE, " "),
+				createToken(TAG, "h1"),
+			},
+		},
 	}
 
 	for _, test_case := range test_cases {

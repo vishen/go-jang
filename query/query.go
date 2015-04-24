@@ -21,9 +21,46 @@ type Query struct {
 }
 
 func NewQueryFromNode(node *parser.Node) *Query {
-	nodes := []*parser.Node{node}
-
+	nodes := []*parser.Node{}
+	nodes = append(nodes, node)
 	return &Query{Nodes: nodes}
+}
+
+func (self *Query) Reset() {
+	self.Nodes = []*parser.Node{}
+}
+
+func (self *Query) AddNodes(nodes []*parser.Node) {
+	// fmt.Println("AddNOdes", nodes)
+	self.Nodes = append(self.Nodes, nodes...)
+	// fmt.Println(self.Nodes)
+	// self.clean()
+}
+
+/*
+	It is possible that there could be the same node
+	more than once in a `Query` - like when combining
+	2 queries together. Just remove all duplicate nodes
+*/
+func (self *Query) clean() {
+	cleaned := []*parser.Node{}
+	var can_add bool
+	for _, node := range self.Nodes {
+		can_add = true
+		for _, cleaned_node := range cleaned {
+			if cleaned_node.Id == node.Id {
+				can_add = false
+				break
+			}
+		}
+
+		if can_add {
+			cleaned = append(cleaned, node)
+		}
+	}
+
+	self.Nodes = cleaned
+
 }
 
 func (self Query) FindByTag(tag string) *Query {

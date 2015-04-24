@@ -142,9 +142,7 @@ func Tokenizer(input string) []Token {
 			line += 1
 			column = 0
 		case '<':
-			// Ignore comments for now
-			// TODO(vishen): Make some more tokens for comments - probably easier if
-			// this is done in the tokenizer and just add a new Comment token.
+			// Consume a comment into a token
 			if input[pos+1] == '!' && input[pos+2] == '-' {
 				tmp := pos + 3
 				start := tmp + 1
@@ -153,6 +151,8 @@ func Tokenizer(input string) []Token {
 						pos = tmp
 						tokens = append(tokens, Token{Token_type: Comment, Value: strings.TrimSpace(input[start : tmp-2]), Column: column, Line: line})
 						break
+					} else if input[tmp] == '\n' {
+						line++
 					}
 
 					tmp += 1
@@ -176,7 +176,7 @@ func Tokenizer(input string) []Token {
 			tokens = append(tokens, Token{Token_type: CloseTag, Value: ">", Column: column, Line: line})
 		case '/':
 			// Because of javascript comments we just assume if we see a '/'
-			// and we are not in the declaration just comsime the Text
+			// and we are not in the declaration just consume the Text
 
 			//TODO(vishen): Find a better way to handle this
 			if !in_declaration {

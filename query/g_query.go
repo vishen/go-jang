@@ -18,6 +18,7 @@ const (
 	SPACE
 	OPEN_BRACKET
 	CLOSE_BRACKET
+	AND
 	UNKNOWN
 
 	ALL = "ALL"
@@ -50,6 +51,8 @@ func (t GQueryToken) String() string {
 		token_string = "OPEN_BRACKET"
 	case CLOSE_BRACKET:
 		token_string = "CLOSE_BRACKET"
+	case AND:
+		token_string = "AND"
 	default:
 		token_string = "UNKNOWN"
 	}
@@ -76,7 +79,7 @@ func consumeAttribute(input string, pos int) (string, int) {
 			break
 		}
 		switch input[tmp] {
-		case '#', '.', '=', ' ', '[', ']':
+		case '#', '.', '=', ' ', '[', ']', ',':
 			finished = true
 			tmp--
 		}
@@ -110,6 +113,8 @@ func tokenzier(input string) []GQueryToken {
 			tokens = append(tokens, GQueryToken{token_type: CLASS, value: "."})
 		case '=':
 			tokens = append(tokens, GQueryToken{token_type: EQUALS, value: "="})
+		case ',':
+			tokens = append(tokens, GQueryToken{token_type: AND, value: ","})
 		case ' ':
 			tokens = append(tokens, GQueryToken{token_type: SPACE, value: " "})
 		case '[':
@@ -132,7 +137,7 @@ func tokenzier(input string) []GQueryToken {
 					tokens = append(tokens, GQueryToken{token_type: VALUE, value: value})
 				} else if in_brackets {
 					tokens = append(tokens, GQueryToken{token_type: ATTRIBUTE, value: value})
-				} else if previous_token.token_type == SPACE {
+				} else if previous_token.token_type == SPACE || previous_token.token_type == AND {
 					tokens = append(tokens, GQueryToken{token_type: TAG, value: value})
 				} else {
 					tokens = append(tokens, GQueryToken{token_type: VALUE, value: value})
@@ -150,7 +155,13 @@ func GQuery(lookup string, node *parser.Node) *Query {
 	var token GQueryToken
 	var tokens []GQueryToken
 
+	// In order to have the ability to chain queryies together
+	// we need to keep track of two queries. One for the current query,
+	// and the other for the returning query.
+	// TODO(vishen): Possibly rethink the whole way of doing queries :s.
 	query := NewQueryFromNode(node)
+	return_query := &Query{}
+
 	current_node := false
 
 	if lookup == ALL {
@@ -196,6 +207,10 @@ func GQuery(lookup string, node *parser.Node) *Query {
 			current_node = false
 		// case OPEN_BRACKET:
 		// 	current_node = true
+		case AND:
+			return_query.AddNodes(query.Nodes)
+			query.Reset()
+			query.Nodes = append(query.Nodes, node)
 		case ATTRIBUTE:
 			attr_name := token.value
 			if pos+2 < len(tokens) && tokens[pos+1].token_type == EQUALS && tokens[pos+2].token_type == VALUE {
@@ -205,7 +220,6 @@ func GQuery(lookup string, node *parser.Node) *Query {
 					query = query.FindChildrenByAttributeEquals(attr_name, tokens[pos+2].value)
 				}
 			} else {
-				fmt.Println(current_node)
 				if current_node {
 					query = query.FindByAttribute(attr_name)
 				} else {
@@ -218,7 +232,8 @@ func GQuery(lookup string, node *parser.Node) *Query {
 
 		pos++
 	}
+	return_query.AddNodes(query.Nodes)
 
-	return query
+	return return_query
 
 }

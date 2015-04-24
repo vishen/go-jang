@@ -98,6 +98,14 @@ func WalkNode(root *Node) {
 }
 
 func Parser(tokens []tokenizer.Token) *Node {
+
+	/*for i, token := range tokens {
+		fmt.Println(i, token)
+
+		if i > 10 {
+			return &Node{}
+		}
+	}*/
 	var root_node *Node
 	var current_node *Node
 	var attribute_values []string
